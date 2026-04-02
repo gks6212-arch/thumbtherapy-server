@@ -2,7 +2,15 @@ const express = require("express");
 const app = express();
 
 app.use(express.json());
-
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    next();
+});
+app.options("*", (req, res) => {
+    res.sendStatus(200);
+});
 // ✅ 루트 (이거 중요)
 app.get("/", (req, res) => {
   res.send("Server is running!");

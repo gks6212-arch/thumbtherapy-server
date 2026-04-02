@@ -21,7 +21,7 @@ app.post("/approve", async (req, res) => {
   const { paymentId } = req.body;
   console.log("승인 요청:", paymentId);
 
-  res.json({ success: true });
+res.json({ result: "success" });
 });
 
 // 완료
@@ -29,7 +29,7 @@ app.post("/complete", async (req, res) => {
   const { paymentId, txid } = req.body;
   console.log("완료 요청:", paymentId, txid);
 
-  res.json({ success: true });
+ res.json({ result: "success" });
 });
 
 const PORT = process.env.PORT || 3000;

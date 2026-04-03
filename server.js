@@ -1,38 +1,65 @@
 const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+
 const app = express();
+app.use(cors());
+app.use(bodyParser.json());
 
-app.use(express.json());
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    next();
-});
-app.options("*", (req, res) => {
-    res.sendStatus(200);
-});
-// ✅ 루트 (이거 중요)
 app.get("/", (req, res) => {
-  res.send("Server is running!");
+  res.send("Thumb Therapy Pi payment server is running.");
 });
 
-// 승인
 app.post("/approve", async (req, res) => {
-  const { paymentId } = req.body;
-  console.log("승인 요청:", paymentId);
+  try {
+    const { paymentId } = req.body;
 
-res.json({ success: true });
+    if (!paymentId) {
+      return res.status(400).json({ ok: false, message: "paymentId is required" });
+    }
+
+    console.log("[APPROVE]", paymentId);
+
+    return res.json({
+      ok: true,
+      paymentId,
+      message: "Payment approved by server"
+    });
+  } catch (error) {
+    console.error("APPROVE ERROR", error);
+    return res.status(500).json({
+      ok: false,
+      message: error.message || "approve failed"
+    });
+  }
 });
 
-// 완료
 app.post("/complete", async (req, res) => {
-  const { paymentId, txid } = req.body;
-  console.log("완료 요청:", paymentId, txid);
+  try {
+    const { paymentId, txid } = req.body;
 
-res.json({ success: true });
+    if (!paymentId || !txid) {
+      return res.status(400).json({ ok: false, message: "paymentId and txid are required" });
+    }
+
+    console.log("[COMPLETE]", paymentId, txid);
+
+    return res.json({
+      ok: true,
+      paymentId,
+      txid,
+      message: "Payment completed by server"
+    });
+  } catch (error) {
+    console.error("COMPLETE ERROR", error);
+    return res.status(500).json({
+      ok: false,
+      message: error.message || "complete failed"
+    });
+  }
 });
 
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, '0.0.0.0', () => {
-console.log("서버 실행:", PORT);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

@@ -5,46 +5,48 @@ const app = express();
 
 app.use(cors({
   origin: "*",
-  methods: ["GET", "POST"],
+  methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type"]
 }));
+
 app.use(express.json());
+
+// 기본 확인용
 app.get("/", (req, res) => {
-  res.send("server running");
+  res.status(200).send("server running");
 });
 
-app.post("/approve", async (req, res) => {
-  try {
-    console.log("approve:", req.body);
-    res.json({ success: true });
-  } catch (error) {
-    console.error("approve error:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message || "approve failed"
-    });
-  }
+// 상태 확인용
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    ok: true,
+    service: "thumbtherapy-server",
+    timestamp: new Date().toISOString()
+  });
 });
 
-app.post("/complete", async (req, res) => {
-  try {
-    console.log("complete:", req.body);
-    res.json({ success: true });
-  } catch (error) {
-    console.error("complete error:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message || "complete failed"
-    });
-  }
+// Pi approve
+app.post("/approve", (req, res) => {
+  console.log("approve:", req.body);
+
+  // 테스트 단계에서는 즉시 승인 응답
+  return res.status(200).json({
+    success: true
+  });
 });
 
-// 🔥 ⭐
-app.get("/", (req, res) => {
-  res.send("Server is running 🚀");
+// Pi complete
+app.post("/complete", (req, res) => {
+  console.log("complete:", req.body);
+
+  // 테스트 단계에서는 즉시 완료 응답
+  return res.status(200).json({
+    success: true
+  });
 });
 
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });

@@ -6,6 +6,38 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+const PI_API_KEY = process.env.PI_API_KEY;
+const PI_API_BASE = process.env.PI_API_BASE || "https://api.minepi.com/v2";
+
+if (!PI_API_KEY) {
+  console.warn("PI_API_KEY is missing. Payment approve/complete will fail.");
+}
+
+async function piPost(path, body = null) {
+  const res = await fetch(`${PI_API_BASE}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Key ${PI_API_KEY}`
+    },
+    body: body ? JSON.stringify(body) : null
+  });
+
+  const text = await res.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { raw: text };
+  }
+
+  if (!res.ok) {
+    throw new Error(`Pi API ${res.status}: ${JSON.stringify(data)}`);
+  }
+
+  return data;
+}
+
 app.get("/", (req, res) => {
   res.send("Thumb Therapy Pi payment server is running.");
 });
@@ -15,18 +47,23 @@ app.post("/approve", async (req, res) => {
     const { paymentId } = req.body;
 
     if (!paymentId) {
-      return res.status(400).json({ ok: false, message: "paymentId is required" });
+      return res.status(400).json({
+        ok: false,
+        message: "paymentId is required"
+      });
     }
 
-    console.log("[APPROVE]", paymentId);
+    const paymentDTO = await piPost(`/payments/${paymentId}/approve`);
+
+    console.log("[APPROVE OK]", paymentId, paymentDTO);
 
     return res.json({
       ok: true,
       paymentId,
-      message: "Payment approved by server"
+      paymentDTO
     });
   } catch (error) {
-    console.error("APPROVE ERROR", error);
+    console.error("[APPROVE ERROR]", error);
     return res.status(500).json({
       ok: false,
       message: error.message || "approve failed"
@@ -39,19 +76,26 @@ app.post("/complete", async (req, res) => {
     const { paymentId, txid } = req.body;
 
     if (!paymentId || !txid) {
-      return res.status(400).json({ ok: false, message: "paymentId and txid are required" });
+      return res.status(400).json({
+        ok: false,
+        message: "paymentId and txid are required"
+      });
     }
 
-    console.log("[COMPLETE]", paymentId, txid);
+    const paymentDTO = await piPost(`/payments/${paymentId}/complete`, {
+      txid
+    });
+
+    console.log("[COMPLETE OK]", paymentId, txid, paymentDTO);
 
     return res.json({
       ok: true,
       paymentId,
       txid,
-      message: "Payment completed by server"
+      paymentDTO
     });
   } catch (error) {
-    console.error("COMPLETE ERROR", error);
+    console.error("[COMPLETE ERROR]", error);
     return res.status(500).json({
       ok: false,
       message: error.message || "complete failed"

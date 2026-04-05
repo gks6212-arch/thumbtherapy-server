@@ -1,13 +1,12 @@
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
-require('dotenv').config();
+require("dotenv").config();
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-
-
 
 app.get("/", (req, res) => {
   res.send("server running");
@@ -21,9 +20,6 @@ app.get("/health", (req, res) => {
   });
 });
 
-/* =========================
-   승인 (approve)
-========================= */
 app.post("/approve", async (req, res) => {
   try {
     console.log("approve 요청:", req.body);
@@ -37,7 +33,7 @@ app.post("/approve", async (req, res) => {
       });
     }
 
-    if (!PI_API_KEY) {
+    if (!process.env.PI_API_KEY) {
       return res.status(500).json({
         success: false,
         error: "PI_API_KEY 없음"
@@ -49,7 +45,7 @@ app.post("/approve", async (req, res) => {
       {},
       {
         headers: {
-          Authorization: `Key ${PI_API_KEY}`
+          Authorization: `Key ${process.env.PI_API_KEY}`
         },
         timeout: 10000
       }
@@ -71,9 +67,6 @@ app.post("/approve", async (req, res) => {
   }
 });
 
-/* =========================
-   완료 (complete)
-========================= */
 app.post("/complete", async (req, res) => {
   try {
     console.log("complete 요청:", req.body);
@@ -94,7 +87,7 @@ app.post("/complete", async (req, res) => {
       });
     }
 
-    if (!PI_API_KEY) {
+    if (!process.env.PI_API_KEY) {
       return res.status(500).json({
         success: false,
         error: "PI_API_KEY 없음"
@@ -106,7 +99,7 @@ app.post("/complete", async (req, res) => {
       { txid },
       {
         headers: {
-          Authorization: `Key ${PI_API_KEY}`
+          Authorization: `Key ${process.env.PI_API_KEY}`
         },
         timeout: 10000
       }

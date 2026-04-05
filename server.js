@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PI_API_KEY = process.env.PI_API_KEY;
+
 
 app.get("/", (req, res) => {
   res.send("server running");
@@ -16,7 +16,7 @@ app.get("/", (req, res) => {
 app.get("/health", (req, res) => {
   res.json({
     ok: true,
-    keyExists: !!PI_API_KEY,
+    keyExists: !!process.env.PI_API_KEY,
     time: new Date().toISOString()
   });
 });
